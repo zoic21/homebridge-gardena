@@ -1,8 +1,6 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
-
-import { TadoHomebridgePlatform } from './platform';
-
-import { Tado } from "node-tado-client";
+import { GardenaHomebridgePlatform } from './platform';
+import { GardenaConnection } from 'gardena-smart-system';
 
 /**
  * Platform Accessory
@@ -15,12 +13,12 @@ export class PresencePlatformAccessory {
   private state;
 
   constructor(
-    private readonly platform: TadoHomebridgePlatform,
+    private readonly platform: GardenaHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
   ) {
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'homebridge-tado')
+      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'homebridge-gardena')
       .setCharacteristic(this.platform.Characteristic.Model, 'switch')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, 'presence');
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
@@ -48,22 +46,22 @@ export class PresencePlatformAccessory {
   handleOnSet(value) {
     if(value){
       this.platform.log.debug('Triggered presence to home');
-      this.platform.Tado.setPresence(this.homeId,'home').then(() => {
+      this.platform.Gardena.setPresence(this.homeId,'home').then(() => {
         this.platform.refreshData().then(() => {
           this.platform.refreshData()
         })
       }).catch(error => {
         setTimeout(() => {
-          this.platform.Tado.setPresence(this.homeId,'home')
+          this.platform.Gardena.setPresence(this.homeId,'home')
         }, 1000);
       });
     }else{
       this.platform.log.debug('Triggered presence to away');
-      this.platform.Tado.setPresence(this.homeId,'away').then(() => {
+      this.platform.Gardena.setPresence(this.homeId,'away').then(() => {
         this.platform.refreshData()
       }).catch(error => {
         setTimeout(() => {
-          this.platform.Tado.setPresence(this.homeId,'away').then(() => {
+          this.platform.Gardena.setPresence(this.homeId,'away').then(() => {
             this.platform.refreshData()
           })
         }, 1000);

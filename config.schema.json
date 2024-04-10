@@ -1,18 +1,18 @@
 {
-  "pluginAlias": "tado",
+  "pluginAlias": "gardena",
   "pluginType": "platform",
   "singular": true,
   "schema": {
     "type": "object",
     "properties": {
-      "username": {
-        "title": "Username",
+      "client_id": {
+        "title": "Client ID",
         "type": "string",
         "required": true,
         "default": ""
       },
-      "password": {
-        "title": "Password",
+      "client_secret": {
+        "title": "Client secret",
         "type": "string",
         "required": true,
         "default": ""

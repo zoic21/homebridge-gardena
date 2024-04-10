@@ -1,11 +1,11 @@
 import { API } from 'homebridge';
 
 import { PLATFORM_NAME } from './settings';
-import { TadoHomebridgePlatform } from './platform';
+import { GardenaHomebridgePlatform } from './platform';
 
 /**
  * This method registers the platform with Homebridge
  */
 export = (api: API) => {
-  api.registerPlatform(PLATFORM_NAME, TadoHomebridgePlatform);
+  api.registerPlatform(PLATFORM_NAME, GardenaHomebridgePlatform);
 };

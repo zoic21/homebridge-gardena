@@ -2,7 +2,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { PresencePlatformAccessory } from './presencePlatformAccessory';
-import { Tado } from "node-tado-client";
+import { GardenaConnection } from 'gardena-smart-system';
 
 
 /**
@@ -10,10 +10,10 @@ import { Tado } from "node-tado-client";
  * This class is the main constructor for your plugin, this is where you should
  * parse the user config and discover/register accessories with Homebridge.
  */
-export class TadoHomebridgePlatform implements DynamicPlatformPlugin {
+export class GardenaHomebridgePlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service = this.api.hap.Service;
   public readonly Characteristic: typeof Characteristic = this.api.hap.Characteristic;
-  public Tado;
+  public Gardena;
   public Devices = {};
 
   // this is used to track restored cached accessories
@@ -49,9 +49,9 @@ export class TadoHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   refreshData(){
-    this.Tado.getMe().then((resp) => {
+    this.Gardena.getMe().then((resp) => {
       for (const home of resp.homes) {
-        this.Tado.getState(home.id).then((state) => {
+        this.Gardena.getState(home.id).then((state) => {
           const uuid = this.api.hap.uuid.generate('presence'+home.id);
           if(state.presence == 'AWAY'){
             this.Devices[uuid].updateValue(false);
@@ -59,13 +59,13 @@ export class TadoHomebridgePlatform implements DynamicPlatformPlugin {
             this.Devices[uuid].updateValue(true);
           }
         });
-        this.Tado.getDevices(home.id).then((state) => {
+        this.Gardena.getDevices(home.id).then((state) => {
 
         });  
-        this.Tado.getZones(home.id).then((state) => {
+        this.Gardena.getZones(home.id).then((state) => {
 
         });
-        this.Tado.getHome(home.id).then((state) => {
+        this.Gardena.getHome(home.id).then((state) => {
 
         }); 
       }
@@ -78,10 +78,10 @@ export class TadoHomebridgePlatform implements DynamicPlatformPlugin {
    * must not be registered again to prevent "duplicate UUID" errors.
    */
   discoverDevices() {
-    this.Tado = new Tado();
-    // Login to the Tado Web API
-    this.Tado.login(this.config.username, this.config.password).then(() => {
-      this.Tado.getMe().then((resp) => {
+    this.Gardena = new Gardena();
+    // Login to the Gardena Web API
+    this.Gardena.login(this.config.username, this.config.password).then(() => {
+      this.Gardena.getMe().then((resp) => {
         for (const home of resp.homes) {
           // generate a unique id for the accessory this should be generated from
           // something globally unique, but constant, for example, the device serial
