@@ -49,27 +49,7 @@ export class GardenaHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   refreshData(){
-    this.Gardena.getMe().then((resp) => {
-      for (const home of resp.homes) {
-        this.Gardena.getState(home.id).then((state) => {
-          const uuid = this.api.hap.uuid.generate('presence'+home.id);
-          if(state.presence == 'AWAY'){
-            this.Devices[uuid].updateValue(false);
-          }else{
-            this.Devices[uuid].updateValue(true);
-          }
-        });
-        this.Gardena.getDevices(home.id).then((state) => {
-
-        });  
-        this.Gardena.getZones(home.id).then((state) => {
-
-        });
-        this.Gardena.getHome(home.id).then((state) => {
-
-        }); 
-      }
-    });
+    
   }
 
   /**
@@ -78,15 +58,15 @@ export class GardenaHomebridgePlatform implements DynamicPlatformPlugin {
    * must not be registered again to prevent "duplicate UUID" errors.
    */
   discoverDevices() {
-    this.Gardena = new Gardena();
+    this.Gardena = new GardenaConnection({ clientId: this.config.client_id, clientSecret:this.config.client_secret });
     // Login to the Gardena Web API
-    this.Gardena.login(this.config.username, this.config.password).then(() => {
-      this.Gardena.getMe().then((resp) => {
-        for (const home of resp.homes) {
+    this.Gardena.getDevices().then((devices) => {
+        let i  = 0;
+        for (const device of devices) {
           // generate a unique id for the accessory this should be generated from
           // something globally unique, but constant, for example, the device serial
           // number or MAC address
-          const uuid = this.api.hap.uuid.generate('presence'+home.id);
+          const uuid = this.api.hap.uuid.generate('mover'+i);
     
           // see if an accessory with the same uuid has already been registered and restored from
           // the cached devices we stored in the `configureAccessory` method above
@@ -95,27 +75,25 @@ export class GardenaHomebridgePlatform implements DynamicPlatformPlugin {
           if (existingAccessory) {
             // the accessory already exists
             this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
-            this.Devices[uuid] = new PresencePlatformAccessory(this, existingAccessory);
+            this.Devices[uuid] = new StatePlatformAccessory(this, existingAccessory);
           } else {
             // the accessory does not yet exist, so we need to create it
-            this.log.info('Adding new accessory: Thermostat ', home.name);
-    
+            this.log.info('Adding new accessory: mover');
             // create a new accessory
-            const accessory = new this.api.platformAccessory('Thermostat '+home.name, uuid);
+            const accessory = new this.api.platformAccessory('Mover '+i, uuid);
     
             // store a copy of the device object in the `accessory.context`
             // the `context` property can be used to store any data about the accessory you may need
-            accessory.context.device = home;
+            accessory.context.device = device;
     
             // create the accessory handler for the newly create accessory
             // this is imported from `platformAccessory.ts`
-            this.Devices[uuid] = new PresencePlatformAccessory(this, accessory);
+            this.Devices[uuid] = new StatePlatformAccessory(this, accessory);
     
             // link the accessory to your platform
             this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
           }
         }
-      });
       this.refreshData();
       const self = this;
       setInterval(function(){

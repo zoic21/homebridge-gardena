@@ -7,9 +7,9 @@ import { GardenaConnection } from 'gardena-smart-system';
  * An instance of this class is created for each accessory your platform registers
  * Each accessory may expose multiple services of different service types.
  */
-export class PresencePlatformAccessory {
+export class StatePlatformAccessory {
   private service: Service;
-  private homeId;
+  private device;
   private state;
 
   constructor(
@@ -20,7 +20,7 @@ export class PresencePlatformAccessory {
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'homebridge-gardena')
       .setCharacteristic(this.platform.Characteristic.Model, 'switch')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'presence');
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'state');
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
     // you can create multiple services for each accessory
     this.service = this.accessory.getService(this.platform.Service.Switch) || this.accessory.addService(this.platform.Service.Switch);
@@ -29,7 +29,7 @@ export class PresencePlatformAccessory {
     this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name);
     // register handlers for the On/Off Characteristic
     this.service.getCharacteristic(this.platform.Characteristic.On).onSet(this.handleOnSet.bind(this));
-    this.homeId = accessory.context.device.id
+    this.device = accessory.context.device
   }
 
   updateValue(value){
@@ -45,23 +45,24 @@ export class PresencePlatformAccessory {
    */
   handleOnSet(value) {
     if(value){
-      this.platform.log.debug('Triggered presence to home');
-      this.platform.Gardena.setPresence(this.homeId,'home').then(() => {
-        this.platform.refreshData().then(() => {
+      this.platform.log.debug('Triggered state to auto');
+
+      this.device.resumeSchedule().then(() => {
           this.platform.refreshData()
-        })
       }).catch(error => {
         setTimeout(() => {
-          this.platform.Gardena.setPresence(this.homeId,'home')
+          this.device.resumeSchedule().then(() => {
+            this.platform.refreshData()
+          })
         }, 1000);
       });
     }else{
-      this.platform.log.debug('Triggered presence to away');
-      this.platform.Gardena.setPresence(this.homeId,'away').then(() => {
+      this.platform.log.debug('Triggered state to park');
+      this.device.parkUntilFurtherNotice().then(() => {
         this.platform.refreshData()
       }).catch(error => {
         setTimeout(() => {
-          this.platform.Gardena.setPresence(this.homeId,'away').then(() => {
+          this.device.parkUntilFurtherNotice().then(() => {
             this.platform.refreshData()
           })
         }, 1000);
