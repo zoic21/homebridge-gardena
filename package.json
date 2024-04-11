@@ -26,9 +26,7 @@
   "keywords": [
     "homebridge-plugin"
   ],
-  "dependencies": {
-    "gardena-smart-system": "^0.0.10"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^18.16.20",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
