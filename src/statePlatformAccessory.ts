@@ -1,6 +1,5 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { GardenaHomebridgePlatform } from './platform';
-import { GardenaConnection } from 'gardena-smart-system';
 
 /**
  * Platform Accessory
